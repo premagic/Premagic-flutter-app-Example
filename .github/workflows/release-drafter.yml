@@ -9,7 +9,6 @@ on:
   pull_request:
     types: [opened, reopened, synchronize]
 
-
 jobs:
   update_release_draft:
     name: 'Update Release Draft'
