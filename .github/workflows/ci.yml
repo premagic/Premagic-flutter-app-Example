@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches-ignore:
+      - master
+permissions:
+  actions: read
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build
+        run: flutter build web

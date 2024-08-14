@@ -1,0 +1,88 @@
+name: CD
+on:
+  release:
+    types: [published]
+
+# Needed for nx-set-shas when run on the main branch
+permissions:
+  actions: read
+  contents: read
+
+env:
+  HUSKY: 0
+  GH_RELEASE_NAME: ${{ github.event.release.tag_name }}
+  GH_RELEASE_TAG: ${{ github.event.release.tag_name }}
+  GH_RELEASE_URL: ${{ github.event.release.url }}
+  GH_RELEASE_AUTHOR_TYPE: ${{github.event.release.author.type }}
+  GH_RELEASE_AUTHOR_LOGIN: ${{ github.event.release.author.login }}
+  GH_ACTION_SENDER_LOGIN: ${{ github.event.sender.login }}
+  GH_ACTION_SENDER_TYPE: ${{ github.event.sender.type }}
+
+jobs:
+  deploy:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.GH_RELEASE_TAG }}
+      - name: 📱 Build iOS
+        run: flutter build ios --release
+      - name: ⏫ Upload iOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-artifact-${{ env.GH_RELEASE_TAG }}
+          path: ./build/ios/iphoneos/Runner.app
+
+      - name: 🤖 Build Android
+        run: flutter build apk --release
+      - name: ⏫ Upload Android Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-artifact-${{ env.GH_RELEASE_TAG }}
+          path: ./build/app/outputs/flutter-apk/app-release.apk
+
+ build:
+    name: Build iOS
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ env.GH_RELEASE_TAG }}
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: stable
+        flutter-version-file: pubspec.yaml # path to pubspec.yaml
+        cache: true
+        cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache
+        cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
+        pub-cache-key: "flutter-pub:os:-:channel:-:version:-:arch:-:hash:" # optional, change this to force refresh cache of dart pub get dependencies
+        pub-cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:" # optional, change this to specify the cache path
+
+    - name: Install dependencies
+      run: flutter pub get
+
+    - name: Install CocoaPods
+      run: |
+        cd ios
+        pod install
+      working-directory: ios
+
+    - name: Build iOS
+      run: flutter build ios --release --no-codesign
+    - name: Build Android
+      run: flutter build apk --release
+    
+    - name: ⏫ Upload iOS Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ios-artifact-${{ env.GH_RELEASE_TAG }}
+        path: ./build/ios/iphoneos/Runner.app
+    - name: ⏫ Upload Android Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-artifact-${{ env.GH_RELEASE_TAG }}
+        path: ./build/app/outputs/flutter-apk/app-release.apk
