@@ -19,29 +19,6 @@ env:
   GH_ACTION_SENDER_TYPE: ${{ github.event.sender.type }}
 
 jobs:
-  deploy:
-    name: Release
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ env.GH_RELEASE_TAG }}
-      - name: 📱 Build iOS
-        run: flutter build ios --release
-      - name: ⏫ Upload iOS Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-artifact-${{ env.GH_RELEASE_TAG }}
-          path: ./build/ios/iphoneos/Runner.app
-
-      - name: 🤖 Build Android
-        run: flutter build apk --release
-      - name: ⏫ Upload Android Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-artifact-${{ env.GH_RELEASE_TAG }}
-          path: ./build/app/outputs/flutter-apk/app-release.apk
-
  build:
     name: Build iOS
     runs-on: macos-latest
