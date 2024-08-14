@@ -37,18 +37,22 @@ class MyApp extends StatelessWidget {
                 const Text(
                   'View all your photos by clicking the button below',
                 ),
-                ElevatedButton(
-                  onPressed: () =>
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                          const WebViewPage(
-                              initialUrl:
-                              'https://images-group.premagic.com/guest/D-peFVRhQ7WOEGb-EllANQ/#/gallery/public/?focus=Q86iqlAmsVVIJjzg'),
-                        ),
-                      ),
-                  child: const Text('Get My Photos'),
+                Builder(
+                  builder: (context) {
+                    return ElevatedButton(
+                      onPressed: () =>
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                              const WebViewPage(
+                                  initialUrl:
+                                  'https://images-group.premagic.com/guest/D-peFVRhQ7WOEGb-EllANQ/#/gallery/public/?focus=Q86iqlAmsVVIJjzg'),
+                            ),
+                          ),
+                      child: const Text('Get My Photos'),
+                    );
+                  }
                 ),
               ],
             ),
@@ -69,7 +73,6 @@ class WebViewPage extends StatefulWidget {
 }
 
 class _WebViewPageState extends State<WebViewPage> {
-  bool _isLoading = true;
 
   @override
   void initState() {
@@ -83,13 +86,6 @@ class _WebViewPageState extends State<WebViewPage> {
     controller.loadRequest(Uri.parse(widget.initialUrl));
     controller.setNavigationDelegate(
         NavigationDelegate(onPageStarted: (String url) {
-          setState(() {
-            _isLoading = true;
-          });
-        }, onPageFinished: (String url) {
-          setState(() {
-            _isLoading = false;
-          });
         }, onNavigationRequest: (NavigationRequest request) async {
           print("Downloading the following image ${request.url}");
           final fileExtension = request.url
@@ -106,16 +102,8 @@ class _WebViewPageState extends State<WebViewPage> {
       appBar: AppBar(
         title: const Text('My Photos'),
       ),
-      body: Stack(
-        children: [
-          WebViewWidget(
-            controller: controller,
-          ),
-          if (_isLoading)
-            const Center(
-              child: CircularProgressIndicator(),
-            ),
-        ],
+      body: WebViewWidget(
+        controller: controller,
       ),
     );
   }
