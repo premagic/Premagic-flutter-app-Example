@@ -1,4 +1,4 @@
-# example_flutterapp_iframe
+# Premagic flutter app Example
 
 A new Flutter project.
 
